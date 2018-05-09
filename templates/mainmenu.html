@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+
+    <header>
+    <b>
+      {{category.name}}
+    </b>
+    </header>
+
+
+  {% for i in items :%}
+
+  <p>{{i.name}}</p>
+
+<p>{{i.description}}</p>
+<a href="{{url_for('editItem', category_id = category.id, catItem_id = i.id)}}">Edit</a>
+
+{% endfor %}
+
+</body>
+</html>

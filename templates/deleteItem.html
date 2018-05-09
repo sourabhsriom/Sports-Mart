@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h2>Are you sure you wanna delete : {{item.name}}</h2>
+
+  <form class="" action="{{url_for('deleteItem', category_id = category_id, catItem_id = item.id)}}" method="post">
+    <input type="submit" name="" value="Yes">
+  </form>
+
+  <form class="" action="{{url_for('categoryItems', category_id = category_id)}}" method="post">
+    <input type="submit" name="" value="No">
+  </form>
+  </body>
+</html>

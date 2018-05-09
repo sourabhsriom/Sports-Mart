@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+
+    <h2>{{catname}}</h2>
+    <form class="" action="{{url_for('editItem',category_id = category_id ,catItem_id = catItem_id)}}" method="post">
+
+      Name :<br>
+      <input type="text" name="name" placeholder="{{editedItem.name}}"><br>
+      Description :<br>
+      <input type="text" name="desc" placeholder="{{editedItem.description}}">
+      <br>
+      <input type="submit" name="" value="Edit">
+      <a href="{{url_for('HelloWorld')}}">Cancel</a>
+    </form>
+  </body>
+</html>
