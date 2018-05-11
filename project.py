@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dbsetup import Base, Category, catItem
+from dbsetup import Base, Category, catItem, User
 
 from flask import session as login_session
 import random, string
@@ -12,6 +12,9 @@ import httplib2
 import json
 from flask import make_response
 import requests
+
+from flask_httpauth import HTTPBasicAuth
+auth = HTTPBasicAuth()
 
 app = Flask(__name__)
 
@@ -26,6 +29,32 @@ session = DBSession()
 CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id']
 
 
+@auth.verify_password
+def verify_password(username, password):
+    user = session.query(User).filter_by(username = username).first()
+    if not user or not user.verify_password(password):
+        return False
+    g.user = user
+    return True
+
+
+@app.route('/newuser', methods = ['POST'])
+def newUser():
+    username = request.json.get("username")
+    passwd = request.json.get("passwd")
+
+    print (username)
+    print (passwd)
+
+    if not username or not passwd :
+        abort(400)
+    if session.query(User).filter_by(name = username).first() is not None :
+        abort(400)
+    user = User(username = username)
+    user.hash_password(passwd)
+    session.add(user)
+    session.commit()
+    return jsonify({'username : user.username'}), 201
 
 
 @app.route('/login')
@@ -117,6 +146,7 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     print( "done!")
     return output
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
@@ -164,6 +194,7 @@ def categoryItems(category_id):
 
 
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])
+@auth.login_required
 def addCategoryItem(category_id):
     if request.method == 'POST' :
         newItem = catItem(name = request.form['name'], description = request.form['desc'], category_id = category_id)
