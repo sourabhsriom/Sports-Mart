@@ -26,7 +26,7 @@ class catItem(Base):
     category = relationship(Category)
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'User'
 
     name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key=True)

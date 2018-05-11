@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Category, catItem, User
@@ -50,11 +50,11 @@ def newUser():
         abort(400)
     if session.query(User).filter_by(name = username).first() is not None :
         abort(400)
-    user = User(username = username)
+    user = User(name = username)
     user.hash_password(passwd)
     session.add(user)
     session.commit()
-    return jsonify({'username : user.username'}), 201
+    return jsonify({"name" : user.name}), 201
 
 
 @app.route('/login')
