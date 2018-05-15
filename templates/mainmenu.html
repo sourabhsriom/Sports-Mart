@@ -1,37 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title></title>
+    <title>Sourabh's Sports Mart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='styles/css/bulma.css') }}">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='styles/css/bulma.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Text" rel="stylesheet">
   </head>
   <body>
+    <div class="columns">
+    <div class="column is-one-fifth">
+      {% for category in categories :%}
 
-    <header>
-
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-
-      <ul>
-      {% for message in messages %}
-        <li><strong>{{message}}</strong></li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-      {% endwith %}
-    <b>
-      {{category.name}}
-    </b>
-    </header>
+      <p>{{category.name}}</p>
 
 
-  {% for i in items :%}
+      {% endfor %}
 
-  <p>{{i.name}}</p>
+    </div>
+    <div class="column">
+      {% for item in items : %}
 
-<p>{{i.description}}</p>
-<a href="{{url_for('editItem', category_id = category.id, catItem_id = i.id)}}">Edit</a>
+      <p>
+      {{item.name}}
+      </p>
 
-{% endfor %}
+      {% endfor %}
 
-</body>
+    </div>
+
+  </div>
+
+  </body>
 </html>

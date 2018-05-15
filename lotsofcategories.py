@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from dbsetup import Category, Base, catItem
+from datetime import datetime
 
 engine = create_engine('sqlite:///sportsmart.db')
 # Bind the engine to the metadata of the Base class so that the
@@ -47,4 +48,22 @@ session.commit()
 
 item5 = catItem(name = "shin guards", description = "protective wear for your shins", category = cat2)
 session.add(item5)
+session.commit()
+
+cat3 = Category(name = "Hockey")
+
+session.add(cat3)
+session.commit()
+
+item6 = catItem(name = "puck", description = "short cylinder flung across the rink", category = cat3)
+session.add(item6)
+session.commit()
+
+
+item7 = catItem(name = "stick", description = "Like long rod", category = cat3)
+session.add(item7)
+session.commit()
+
+item8 = catItem(name = "knee guard", description = "protect yourself from the wrath of the angry puck", category = cat3)
+session.add(item8)
 session.commit()

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
+from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Category, catItem, User
 
@@ -31,7 +32,7 @@ CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id
 
 @auth.verify_password
 def verify_password(username, password):
-    user = session.query(User).filter_by(username = username).first()
+    user = session.query(User).filter_by(name = username).first()
     if not user or not user.verify_password(password):
         return False
     g.user = user
@@ -181,9 +182,14 @@ def gdisconnect():
 @app.route('/')
 @app.route('/hello')
 def HelloWorld():
+    '''
     category = session.query(Category).first()
     items = session.query(catItem).filter_by(category_id=category.id)
     return render_template('mainmenu.html', category = category, items = items)
+    '''
+    categories = session.query(Category).all()
+    items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
+    return render_template('mainmenu.html', categories = categories, items = items)
 
 @app.route('/<int:category_id>/')
 def categoryItems(category_id):
@@ -218,6 +224,7 @@ def editItem(category_id,catItem_id):
             editedItem.name = request.form['name']
         if request.form['desc'] :
             editedItem.description = request.form['desc']
+        editedItem.updated_ts = datetime.utcnow()
         session.add(editedItem)
         session.commit()
         flash(editedItem.name + ' has been edited!')

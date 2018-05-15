@@ -1,12 +1,17 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+import random, string
+from datetime import datetime
 
 Base = declarative_base()
+
+secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
 
 
 class Category(Base):
@@ -22,6 +27,7 @@ class catItem(Base):
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
+    updated_ts = Column(DateTime, default=datetime.utcnow())
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship(Category)
 
