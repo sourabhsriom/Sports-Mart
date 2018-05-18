@@ -39,23 +39,23 @@ def verify_password(username, password):
     return True
 
 
-@app.route('/newuser', methods = ['POST'])
-def newUser():
-    username = request.json.get("username")
-    passwd = request.json.get("passwd")
-
-    print (username)
-    print (passwd)
-
-    if not username or not passwd :
-        abort(400)
-    if session.query(User).filter_by(name = username).first() is not None :
-        abort(400)
-    user = User(name = username)
-    user.hash_password(passwd)
-    session.add(user)
+def createUser(login_session) :
+    newUser = User(name = login_session['username'], email = login_session['email'])
+    session.add(newUser)
     session.commit()
-    return jsonify({"name" : user.name}), 201
+    user = session.query(User).filter_by(email = login_session['email']).one()
+    return user.id
+
+def getUserInfo(user_id) :
+    user = session.query(User).filter_by(id = user_id).one()
+    return user
+
+def getUserId(email):
+    try :
+        user = session.query(User).filter_by(email = email).one()
+        return user.id
+    except :
+        return None
 
 
 @app.route('/login')
@@ -99,8 +99,8 @@ def gconnect():
         return response
 
     # Verify that the access token is used for the intended user.
-    gplus_id = credentials.id_token['sub']
-    if result['user_id'] != gplus_id:
+    user_id = credentials.id_token['sub']
+    if result['user_id'] != user_id:
         response = make_response(
             json.dumps("Token's user ID doesn't match given user ID."), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -115,8 +115,8 @@ def gconnect():
         return response
 
     stored_access_token = login_session.get('access_token')
-    stored_gplus_id = login_session.get('gplus_id')
-    if stored_access_token is not None and gplus_id == stored_gplus_id:
+    stored_user_id = login_session.get('user_id')
+    if stored_access_token is not None and user_id == stored_user_id:
         response = make_response(json.dumps('Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
@@ -124,7 +124,7 @@ def gconnect():
 
     # Store the access token in the session for later use.
     login_session['access_token'] = credentials.access_token
-    login_session['gplus_id'] = gplus_id
+
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -136,6 +136,11 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+
+    user_id = getUserId(login_session['email'])
+    if not user_id :
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
@@ -166,7 +171,7 @@ def gdisconnect():
     print( result)
     if result['status'] == '200':
         del login_session['access_token']
-        del login_session['gplus_id']
+        del login_session['user_id']
         del login_session['username']
         del login_session['email']
         del login_session['picture']
@@ -200,8 +205,10 @@ def categoryItems(category_id):
 
 
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])
-@auth.login_required
 def addCategoryItem(category_id):
+
+    if 'username' not in login_session :
+        return redirect('/login')
     if request.method == 'POST' :
         newItem = catItem(name = request.form['name'], description = request.form['desc'], category_id = category_id)
         session.add(newItem)
@@ -245,6 +252,20 @@ def deleteItem(category_id, catItem_id):
         return redirect(url_for('categoryItems', category_id = category_id))
     else :
         return render_template('deleteItem.html', category_id = category_id, item = item)
+@app.route('/addCategory/', methods = ['GET', 'POST'])
+def addCategory():
+
+    if 'username' not in login_session :
+        return redirect('/login')
+    if request.method == 'POST' :
+        user_id = getUserId(login_session['email'])
+        newCategory = Category(name = request.form['name'],user_id = user_id )
+        session.add(newCategory)
+        flash('New category created!')
+        session.commit()
+        return redirect('/hello')
+    else :
+        return render_template('addcategory.html')
 
 
 if __name__ == '__main__':
