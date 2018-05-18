@@ -252,6 +252,7 @@ def deleteItem(category_id, catItem_id):
         return redirect(url_for('categoryItems', category_id = category_id))
     else :
         return render_template('deleteItem.html', category_id = category_id, item = item)
+
 @app.route('/addCategory/', methods = ['GET', 'POST'])
 def addCategory():
 
