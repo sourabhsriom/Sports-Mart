@@ -177,6 +177,8 @@ def gdisconnect():
         del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
+        #return  render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
+
         return response
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
@@ -187,14 +189,14 @@ def gdisconnect():
 @app.route('/')
 @app.route('/hello')
 def HelloWorld():
-    '''
-    category = session.query(Category).first()
-    items = session.query(catItem).filter_by(category_id=category.id)
-    return render_template('mainmenu.html', category = category, items = items)
-    '''
+
     categories = session.query(Category).all()
-    items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
-    return render_template('mainmenu.html', categories = categories, items = items)
+
+
+    #items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
+
+    items = (session.query(catItem.id, catItem.name.label('item_name'), catItem.description, catItem.category_id, Category.name).join(Category, catItem.category_id == Category.id).order_by(catItem.updated_ts.desc()).all())
+    return render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
 
 @app.route('/<int:category_id>/')
 def categoryItems(category_id):
@@ -219,7 +221,10 @@ def addCategoryItem(category_id):
     else :
         return render_template('add.html', category_id = category_id)
 
-
+@app.route('/<int:category_id>/<int:catItem_id>/')
+def displayItem(category_id, catItem_id):
+    item = session.query(catItem).filter_by(id = catItem_id).one()
+    return render_template('item.html', item = item)
 
 @app.route('/<int:category_id>/<int:catItem_id>/edit', methods = ['GET', 'POST'])
 def editItem(category_id,catItem_id):

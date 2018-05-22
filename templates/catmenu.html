@@ -7,6 +7,22 @@
   <body>
 
     <header>
+
+      <div class="row top-menu">
+	<div class="col-md-6">
+		<a href="{{url_for('HelloWorld')}}">
+			<span class="glyphicon glyphicon-home" aria-hidden="true"></span>Home
+		</a>
+	</div>
+	<div class="col-md-6 text-right">
+					{%if 'username' not in session %}
+			<a href="{{url_for('showLogin')}}">Click Here to Login </a>
+			{% else %}
+			<a href="{{url_for('gdisconnect')}}">Logout </a>
+			{% endif %}
+
+	</div>
+</div>
     <b>
       {{category.name}}
     </b>
@@ -27,7 +43,9 @@
 
   {% for i in items :%}
 
-  <p>{{i.name}}</p>
+  <p>
+    <a href="{{url_for('displayItem', category_id = category.id, catItem_id = i.id)}}">{{i.name}}</a>
+    </p>
 
 <p>{{i.description}}</p>
 <a href="{{url_for('editItem', category_id = category.id, catItem_id = i.id)}}">Edit</a>
