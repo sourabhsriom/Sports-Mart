@@ -179,7 +179,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         #return  render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
 
-        return response
+        return redirect(url_for('HelloWorld'))
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
@@ -203,7 +203,11 @@ def categoryItems(category_id):
     category = session.query(Category).filter_by(id = category_id).one()
     items = session.query(catItem).filter_by(category_id = category_id).all()
 
-    return render_template('catmenu.html', category = category, items = items)
+    if 'username' not in login_session :
+        return render_template('catmenuPublic.html', category = category, items = items)
+    else:
+
+        return render_template('catmenu.html', category = category, items = items)
 
 
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])

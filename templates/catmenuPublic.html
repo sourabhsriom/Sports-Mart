@@ -21,17 +21,8 @@
       <div class="container">
         <h1 class="title">
           <a href="{{url_for('HelloWorld')}}">Sourabh's Sports Mart</a>
-        </h1>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
 
-        <ul>
-        {% for message in messages %}
-          <li><strong>{{message}}</strong></li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
+        </h1>
             </div>
     </div>
 
@@ -52,33 +43,35 @@
 </nav>
   </div>
 </section>
-    <div class="columns is-8">
-    <div class="column is-one-fifth">
-      {% for category in categories :%}
-
-      <p>
-        <a href="{{url_for('categoryItems', category_id = category.id)}}">  {{category.name}}</a>
-
-      </p>
+    <b>
+      {{category.name}}
+    </b>
 
 
+    </header>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    <ul>
+    {% for message in messages %}
+      <li><strong>{{message}}</strong></li>
       {% endfor %}
-<a href="{{url_for('addCategory')}}">Add a Category</a>
-    </div>
-    <div class="column">
-      {% for item in items : %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 
 
+  {% for i in items :%}
 
-      <p>
-        <a href="{{url_for('displayItem', category_id = item.category_id, catItem_id = item.id)}}">{{item.item_name}}({{item.name}})</a>
-      </p>
+  <p>
+    <a href="{{url_for('displayItem', category_id = category.id, catItem_id = i.id)}}">{{i.name}}</a>
+    </p>
 
-      {% endfor %}
+<p>{{i.description}}</p>
 
-    </div>
 
-  </div>
+{% endfor %}
 
-  </body>
+
+</body>
 </html>
