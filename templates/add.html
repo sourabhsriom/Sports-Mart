@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
     <h2>New Item</h2>
 
 <form class="" action="{{url_for('addCategoryItem', category_id = category_id)}}" method="post">
@@ -17,5 +13,5 @@
   <input type="submit" name="Create" value="Create">
 
 </form>
-  </body>
-</html>
+
+{% endblock%}

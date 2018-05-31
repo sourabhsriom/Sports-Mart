@@ -202,9 +202,10 @@ def HelloWorld():
 def categoryItems(category_id):
     category = session.query(Category).filter_by(id = category_id).one()
     items = session.query(catItem).filter_by(category_id = category_id).all()
+    categories = session.query(Category).all()
 
     if 'username' not in login_session :
-        return render_template('catmenuPublic.html', category = category, items = items)
+        return render_template('catmenuPublic.html', category = category, items = items, categories = categories)
     else:
 
         return render_template('catmenu.html', category = category, items = items)

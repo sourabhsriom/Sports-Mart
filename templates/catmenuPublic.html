@@ -1,77 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>Sourabh's Sports Mart</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href= "{{ url_for('static',filename='styles/css/bulma.css') }}">
-    <link rel="stylesheet" href= "{{ url_for('static',filename='styles/css/bulma.css') }}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Crimson+Text" rel="stylesheet">
-  </head>
-  <body>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
 
-    <section class="hero is-info">
-  <div class="hero-body">
-
-
-          <nav class="level">
-  <!-- Left side -->
-  <div class="level-left">
-    <div class="level-item">
-      <div class="container">
-        <h1 class="title">
-          <a href="{{url_for('HelloWorld')}}">Sourabh's Sports Mart</a>
-
-        </h1>
-            </div>
-    </div>
-
-  </div>
-
-
-  <div class="level-right">
-
-    <p class="level-item">
-      {%if 'username' not in login_session %}
-			<a href="{{url_for('showLogin')}}">Click Here to Login </a>
-			{% else %}
-			<a href="{{url_for('gdisconnect')}}">Logout </a>
-{% endif %}
-
-      </p>
-  </div>
-</nav>
-  </div>
-</section>
-    <b>
-      {{category.name}}
-    </b>
-
-
-    </header>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-
-    <ul>
-    {% for message in messages %}
-      <li><strong>{{message}}</strong></li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-
-
-  {% for i in items :%}
+<div class="columns is-8">
+<div class="column is-one-fifth">
+  <b>Categories</b>
+  {% for category in categories :%}
 
   <p>
-    <a href="{{url_for('displayItem', category_id = category.id, catItem_id = i.id)}}">{{i.name}}</a>
-    </p>
+    <a href="{{url_for('categoryItems', category_id = category.id)}}">  {{category.name}}</a>
 
-<p>{{i.description}}</p>
-
-
-{% endfor %}
+  </p>
 
 
-</body>
-</html>
+  {% endfor %}
+<a href="{{url_for('addCategory')}}">Add a Category</a>
+</div>
+<div class="column">
+  <b>{{category.name}}</b>
+  {% for item in items : %}
+
+
+
+  <p>
+    <a href="{{url_for('displayItem', category_id = item.category_id, catItem_id = item.id)}}">{{item.name}}</a>
+  </p>
+
+  {% endfor %}
+
+</div>
+
+</div>
+
+{% endblock %}

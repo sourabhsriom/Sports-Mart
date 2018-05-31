@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
 
     <h2>{{catname}}</h2>
     <form class="" action="{{url_for('editItem',category_id = category_id ,catItem_id = catItem_id)}}" method="post">
@@ -17,5 +13,4 @@
       <input type="submit" name="" value="Edit">
       <a href="{{url_for('HelloWorld')}}">Cancel</a>
     </form>
-  </body>
-</html>
+{% endblock %}

@@ -1,16 +1,21 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>
-      {{item.name}}
-    </title>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+    <h1>
+      <b>{{item.name}}</b></h1>
+
+
   </head>
   <body>
 
     <h1>Description :</h1>
     {{item.description}}
 
+    <p>
 
-  </body>
-</html>
+      <a href="{{url_for('editItem', category_id = item.category_id, catItem_id = item.id)}}">Edit</a>
+
+      <a href="{{url_for('deleteItem', category_id = item.category_id, catItem_id = item.id)}}">Delete</a>
+    </p>
+
+{% endblock %}
