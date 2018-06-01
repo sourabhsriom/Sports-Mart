@@ -2,36 +2,39 @@
 {% block content %}
 {% include "header.html" %}
 
-<section class="hero is-light">
-  <div class="hero-body">
-    <div class="container">
-      <h1 class="title">
-        <b>
-          {{category.name}}
-        </b>
-      </h1>
-
-    </div>
-  </div>
-</section>
-
-
-    <a href="{{url_for('addCategoryItem', category_id = category.id)}}">Add new item</a>
-    </header>
-
-
-
-  {% for i in items :%}
+<div class="columns is-8">
+<div class="column is-one-fifth">
+  <b>Categories</b>
+  {% for category in categories :%}
 
   <p>
-    <a href="{{url_for('displayItem', category_id = category.id, catItem_id = i.id)}}">{{i.name}}</a>
-    </p>
+    <a href="{{url_for('categoryItems', category_id = category.id)}}">  {{category.name}}</a>
+
+  </p>
 
 
-<a href="{{url_for('editItem', category_id = category.id, catItem_id = i.id)}}">Edit</a>
-<a href="{{url_for('deleteItem', category_id = category.id, catItem_id = i.id)}}">Delete</a>
+  {% endfor %}
 
-{% endfor %}
+</div>
+<div class="column">
 
+  <a href="{{url_for('addCategoryItem', category_id = category.id)}}">Add Item</a>
+  <p><b>{{category.name}}</b></p>
+
+  {% for item in items : %}
+
+
+
+  <p>
+    <a href="{{url_for('displayItem', category_id = item.category_id, catItem_id = item.id)}}">{{item.name}}</a>
+  </p>
+  <a href="{{url_for('editItem', category_id = category.id, catItem_id = item.id)}}">Edit</a>
+  <a href="{{url_for('deleteItem', category_id = category.id, catItem_id = item.id)}}">Delete</a>
+
+  {% endfor %}
+
+</div>
+
+</div>
 
 {% endblock %}
