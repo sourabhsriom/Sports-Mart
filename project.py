@@ -196,6 +196,10 @@ def HelloWorld():
     #items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
 
     items = (session.query(catItem.id, catItem.name.label('item_name'), catItem.description, catItem.category_id, Category.name).join(Category, catItem.category_id == Category.id).order_by(catItem.updated_ts.desc()).all())
+
+    if 'username' not in login_session :
+        return render_template('mainmenuPublic.html', categories = categories, items = items, login_session = login_session)
+
     return render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
 
 @app.route('/<int:category_id>/')
@@ -204,11 +208,11 @@ def categoryItems(category_id):
     items = session.query(catItem).filter_by(category_id = category_id).all()
     categories = session.query(Category).all()
 
-    if 'username' not in login_session :
+    if 'username' not in login_session or getUserId(login_session['email']) != category.user_id :
         return render_template('catmenuPublic.html', category = category, items = items, categories = categories)
     else:
 
-        return render_template('catmenu.html', category = category, items = items)
+        return render_template('catmenu.html', category = category, items = items, categories = categories)
 
 
 @app.route('/<int:catItem_id>/JSON')
@@ -231,6 +235,23 @@ def addCategoryItem(category_id):
     else :
         return render_template('add.html', category_id = category_id)
 
+@app.route('/addNewItem', methods = ['GET', 'POST'])
+def addNewItem():
+    if request.method == 'POST':
+
+        user_id = getUserId(login_session['email'])
+        if user_id != session.query(Category).filter_by(name = request.form['category']).one().user_id :
+            flash('User not permitted to modify this category')
+            return redirect(url_for('addNewItem'))
+        category_id = session.query(Category).filter_by(name = request.form['category']).one().id
+        newItem = catItem(name = request.form['name'], description = request.form['desc'], category_id = category_id )
+        session.add(newItem)
+        session.commit()
+        flash("New item added!")
+        return redirect(url_for('HelloWorld'))
+    else :
+        return render_template('addNewItem.html')
+
 @app.route('/<int:category_id>/<int:catItem_id>/')
 def displayItem(category_id, catItem_id):
     item = session.query(catItem).filter_by(id = catItem_id).one()
@@ -240,19 +261,24 @@ def displayItem(category_id, catItem_id):
 def editItem(category_id,catItem_id):
     cat = session.query(Category).filter_by(id = category_id).one()
     catname = cat.name
+    categories = session.query(Category).all()
     editedItem = session.query(catItem).filter_by(id = catItem_id).one()
     if request.method == 'POST' :
         if request.form['name'] :
             editedItem.name = request.form['name']
         if request.form['desc'] :
             editedItem.description = request.form['desc']
+
+        if request.form['newCategory'] :
+            print ("name of new category is : ", request.form['newCategory'] )
+            editedItem.category_id = session.query(Category).filter_by(name = request.form['newCategory']).one().id
         editedItem.updated_ts = datetime.utcnow()
         session.add(editedItem)
         session.commit()
         flash(editedItem.name + ' has been edited!')
         return redirect(url_for('categoryItems', category_id = category_id))
     else :
-        return render_template('editItem.html', catItem_id = catItem_id, category_id = category_id, catname = catname, editedItem = editedItem)
+        return render_template('editItem.html', catItem_id = catItem_id, category_id = category_id, catname = catname, editedItem = editedItem, categories = categories)
 
 
 @app.route('/<int:category_id>/<int:catItem_id>/delete', methods = ['GET', 'POST'])

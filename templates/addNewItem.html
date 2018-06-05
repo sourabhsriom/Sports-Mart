@@ -1,0 +1,21 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+    <h2>New Item</h2>
+
+<form class="" action="{{url_for('addNewItem')}}" method="post">
+
+  Category :<br>
+  <input type="text" name="category" value="">
+  <br>
+  Item Name :<br>
+  <input type="text" name="name" value="">
+  <br>
+  Description : <br>
+  <input type="text" name="desc" value="">
+  <br>
+  <input type="submit" name="Create" value="Create">
+
+</form>
+
+{% endblock%}

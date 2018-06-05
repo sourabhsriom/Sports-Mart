@@ -10,6 +10,19 @@
       Description :<br>
       <input type="text" name="desc" placeholder="{{editedItem.description}}">
       <br>
+      Category : <br>
+
+      <select name = "newCategory">
+
+        {% for category in categories :%}
+
+  <option value="{{category.name}}">{{category.name}}</option>
+
+  {% endfor %}
+
+</select>
+
+  <br>
       <input type="submit" name="" value="Edit">
       <a href="{{url_for('HelloWorld')}}">Cancel</a>
     </form>
