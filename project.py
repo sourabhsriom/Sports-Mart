@@ -211,6 +211,11 @@ def categoryItems(category_id):
         return render_template('catmenu.html', category = category, items = items)
 
 
+@app.route('/<int:catItem_id>/JSON')
+def itemJSON(catItem_id):
+    item = session.query(catItem).filter_by(id = catItem_id).one()
+    return jsonify(item = item.serialize)
+
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])
 def addCategoryItem(category_id):
 

@@ -36,6 +36,13 @@ class Category(Base):
     user_id = Column(Integer, ForeignKey('User.id'))
     user = relationship(User)
 
+    @property
+    def serialize(self):
+        '''serialize categories'''
+        return {
+        'name' : self.name
+        }
+
 class catItem(Base):
     __tablename__ = 'catItem'
 
@@ -47,6 +54,15 @@ class catItem(Base):
     user_id = Column(Integer, ForeignKey('User.id'))
     user = relationship(User)
     category = relationship(Category)
+
+    @property
+    def serialize(self):
+        '''serialize category Items'''
+        return {
+
+        'name' : self.name,
+        'description' : self.description
+        }
 
 
 
