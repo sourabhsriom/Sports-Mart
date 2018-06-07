@@ -185,6 +185,9 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+@app.context_processor
+def inject_user():
+     return dict(login_session=login_session)
 
 @app.route('/')
 @app.route('/hello')
@@ -207,6 +210,8 @@ def categoryItems(category_id):
     category = session.query(Category).filter_by(id = category_id).one()
     items = session.query(catItem).filter_by(category_id = category_id).all()
     categories = session.query(Category).all()
+
+    print (login_session.get('username', 'not logged in'))
 
     if 'username' not in login_session or getUserId(login_session['email']) != category.user_id :
         return render_template('catmenuPublic.html', category = category, items = items, categories = categories)
