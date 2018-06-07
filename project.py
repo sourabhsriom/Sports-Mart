@@ -1,4 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import (Flask,
+                   render_template,
+                   request,
+                   redirect,
+                   url_for,
+                   flash,
+                   jsonify)
 from sqlalchemy import create_engine, desc
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
@@ -29,14 +35,6 @@ session = DBSession()
 
 CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id']
 
-
-@auth.verify_password
-def verify_password(username, password):
-    user = session.query(User).filter_by(name = username).first()
-    if not user or not user.verify_password(password):
-        return False
-    g.user = user
-    return True
 
 
 def createUser(login_session) :
@@ -148,7 +146,11 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px;' \
+            'height: 300px;'\
+            'border-radius: 150px;'\
+            '-webkit-border-radius: 150px;' \
+            '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print( "done!")
     return output
@@ -198,12 +200,25 @@ def HelloWorld():
 
     #items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
 
-    items = (session.query(catItem.id, catItem.name.label('item_name'), catItem.description, catItem.category_id, Category.name).join(Category, catItem.category_id == Category.id).order_by(catItem.updated_ts.desc()).all())
+    items = (session.query(catItem.id,
+                          catItem.name.label('item_name'),
+                          catItem.description,
+                          catItem.category_id,
+                          Category.name)
+                          .join(Category,
+                                catItem.category_id == Category.id)
+                          .order_by(catItem.updated_ts.desc()).all())
 
     if 'username' not in login_session :
-        return render_template('mainmenuPublic.html', categories = categories, items = items, login_session = login_session)
+        return render_template('mainmenuPublic.html',
+                                categories = categories,
+                                items = items,
+                                login_session = login_session)
 
-    return render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
+    return render_template('mainmenu.html',
+                            categories = categories,
+                             items = items,
+                             login_session = login_session)
 
 @app.route('/<int:category_id>/')
 def categoryItems(category_id):
@@ -214,16 +229,26 @@ def categoryItems(category_id):
     print (login_session.get('username', 'not logged in'))
 
     if 'username' not in login_session or getUserId(login_session['email']) != category.user_id :
-        return render_template('catmenuPublic.html', category = category, items = items, categories = categories)
+        return render_template('catmenuPublic.html',
+                                category = category,
+                                items = items,
+                                categories = categories)
     else:
 
-        return render_template('catmenu.html', category = category, items = items, categories = categories)
+        return render_template('catmenu.html',
+                               category = category,
+                               items = items,
+                               categories = categories)
 
 
 @app.route('/<int:catItem_id>/JSON')
 def itemJSON(catItem_id):
-    item = session.query(catItem).filter_by(id = catItem_id).one()
-    return jsonify(item = item.serialize)
+
+    try :
+        item = session.query(catItem).filter_by(id = catItem_id).one()
+        return jsonify(item = item.serialize)
+    except :
+        return jsonify({'msg' : 'item not found'})
 
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])
 def addCategoryItem(category_id):
@@ -231,7 +256,9 @@ def addCategoryItem(category_id):
     if 'username' not in login_session :
         return redirect('/login')
     if request.method == 'POST' :
-        newItem = catItem(name = request.form['name'], description = request.form['desc'], category_id = category_id)
+        newItem = catItem(name = request.form['name'],
+                          description = request.form['desc'],
+                          category_id = category_id)
         session.add(newItem)
         session.commit()
         flash("New item added!")
@@ -242,6 +269,9 @@ def addCategoryItem(category_id):
 
 @app.route('/addNewItem', methods = ['GET', 'POST'])
 def addNewItem():
+    if 'username' not in login_session :
+        return redirect('/login')
+
     if request.method == 'POST':
 
         user_id = getUserId(login_session['email'])
@@ -249,7 +279,9 @@ def addNewItem():
             flash('User not permitted to modify this category')
             return redirect(url_for('addNewItem'))
         category_id = session.query(Category).filter_by(name = request.form['category']).one().id
-        newItem = catItem(name = request.form['name'], description = request.form['desc'], category_id = category_id )
+        newItem = catItem(name = request.form['name'],
+                          description = request.form['desc'],
+                          category_id = category_id )
         session.add(newItem)
         session.commit()
         flash("New item added!")
@@ -264,11 +296,23 @@ def displayItem(category_id, catItem_id):
 
 @app.route('/<int:category_id>/<int:catItem_id>/edit', methods = ['GET', 'POST'])
 def editItem(category_id,catItem_id):
+
+    if 'username' not in login_session :
+        return redirect('/login')
+
     cat = session.query(Category).filter_by(id = category_id).one()
     catname = cat.name
     categories = session.query(Category).all()
     editedItem = session.query(catItem).filter_by(id = catItem_id).one()
+
     if request.method == 'POST' :
+        user_id = getUserId(login_session['email'])
+        if user_id != session.query(Category).filter_by(name = request.form['category']).one().user_id :
+            flash('User not permitted to edit this item')
+            return redirect(url_for('editItem'))
+
+
+
         if request.form['name'] :
             editedItem.name = request.form['name']
         if request.form['desc'] :
@@ -283,7 +327,12 @@ def editItem(category_id,catItem_id):
         flash(editedItem.name + ' has been edited!')
         return redirect(url_for('categoryItems', category_id = category_id))
     else :
-        return render_template('editItem.html', catItem_id = catItem_id, category_id = category_id, catname = catname, editedItem = editedItem, categories = categories)
+        return render_template('editItem.html',
+                                catItem_id = catItem_id,
+                                category_id = category_id,
+                                catname = catname,
+                                editedItem = editedItem,
+                                categories = categories)
 
 
 @app.route('/<int:category_id>/<int:catItem_id>/delete', methods = ['GET', 'POST'])
@@ -292,6 +341,11 @@ def deleteItem(category_id, catItem_id):
     item = session.query(catItem).filter_by(id = catItem_id).one()
 
     if request.method == 'POST':
+
+        user_id = getUserId(login_session['email'])
+        if user_id != session.query(Category).filter_by(name = request.form['category']).one().user_id :
+            flash('User not permitted to delete this item')
+            return redirect(url_for('deleteItem'))
         session.delete(item)
         session.commit()
         flash(item.name + ' has been deleted')
