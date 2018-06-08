@@ -11,8 +11,8 @@ from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Category, catItem, User
 
 from flask import session as login_session
-import random, string
-
+import random
+import string
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
@@ -38,6 +38,8 @@ CLIENT_ID = json.loads(open('client_secret.json', 'r').read())['web']['client_id
 
 
 def createUser(login_session) :
+    """function to create a new user using login_session object"""
+
     newUser = User(name = login_session['username'], email = login_session['email'])
     session.add(newUser)
     session.commit()
@@ -45,10 +47,13 @@ def createUser(login_session) :
     return user.id
 
 def getUserInfo(user_id) :
+    """function to get user object based on user id."""
+
     user = session.query(User).filter_by(id = user_id).one()
     return user
 
 def getUserId(email):
+    """function to get user id based on email."""
     try :
         user = session.query(User).filter_by(email = email).one()
         return user.id
@@ -58,6 +63,7 @@ def getUserId(email):
 
 @app.route('/login')
 def showLogin():
+    """function to launch the login page"""
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in range(32))
     login_session['state'] = state
@@ -65,6 +71,7 @@ def showLogin():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """function to use google sign in API"""
     # Validate state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -90,13 +97,13 @@ def gconnect():
            % access_token)
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
-    # If there was an error in the access token info, abort.
+    # If there was an error in the access token info, report the error and end.
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Verify that the access token is used for the intended user.
+    # Verify that the access token is used for the user we want.
     user_id = credentials.id_token['sub']
     if result['user_id'] != user_id:
         response = make_response(
@@ -104,7 +111,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Verify that the access token is valid for this app.
+    # Verify that the access token is valid for this web application.
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
             json.dumps("Token's client ID does not match app's."), 401)
@@ -135,6 +142,7 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+
     user_id = getUserId(login_session['email'])
     if not user_id :
         user_id = createUser(login_session)
@@ -157,6 +165,7 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """function to get logout using google API."""
     access_token = login_session.get('access_token')
     if access_token is None:
         print( 'Access Token is None')
@@ -172,6 +181,7 @@ def gdisconnect():
     print( 'result is ')
     print( result)
     if result['status'] == '200':
+        # delete all keys from the login_session object
         del login_session['access_token']
         del login_session['user_id']
         del login_session['username']
@@ -179,7 +189,7 @@ def gdisconnect():
         del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        #return  render_template('mainmenu.html', categories = categories, items = items, login_session = login_session)
+
 
         return redirect(url_for('HelloWorld'))
     else:
@@ -189,17 +199,15 @@ def gdisconnect():
 
 @app.context_processor
 def inject_user():
-     return dict(login_session=login_session)
+    """function to inject login_session object into all templates"""
+    return dict(login_session=login_session)
 
 @app.route('/')
 @app.route('/hello')
 def HelloWorld():
+    """function to launch homepage."""
 
     categories = session.query(Category).all()
-
-
-    #items = session.query(catItem).order_by(catItem.updated_ts.desc()).all()
-
     items = (session.query(catItem.id,
                           catItem.name.label('item_name'),
                           catItem.description,
@@ -222,6 +230,7 @@ def HelloWorld():
 
 @app.route('/<int:category_id>/')
 def categoryItems(category_id):
+    """function to display items in selected category."""
     category = session.query(Category).filter_by(id = category_id).one()
     items = session.query(catItem).filter_by(category_id = category_id).all()
     categories = session.query(Category).all()
@@ -243,7 +252,7 @@ def categoryItems(category_id):
 
 @app.route('/<int:catItem_id>/JSON')
 def itemJSON(catItem_id):
-
+    """function to get JSON object for an item"""
     try :
         item = session.query(catItem).filter_by(id = catItem_id).one()
         return jsonify(item = item.serialize)
@@ -252,6 +261,7 @@ def itemJSON(catItem_id):
 
 @app.route('/<int:category_id>/new', methods = ['GET', 'POST'])
 def addCategoryItem(category_id):
+    """function to add a new category item."""
 
     if 'username' not in login_session :
         return redirect('/login')
@@ -269,6 +279,7 @@ def addCategoryItem(category_id):
 
 @app.route('/addNewItem', methods = ['GET', 'POST'])
 def addNewItem():
+    """function to add new item for any category."""
     if 'username' not in login_session :
         return redirect('/login')
 
@@ -291,11 +302,13 @@ def addNewItem():
 
 @app.route('/<int:category_id>/<int:catItem_id>/')
 def displayItem(category_id, catItem_id):
+    """function to display the item that is selected."""
     item = session.query(catItem).filter_by(id = catItem_id).one()
     return render_template('item.html', item = item)
 
 @app.route('/<int:category_id>/<int:catItem_id>/edit', methods = ['GET', 'POST'])
 def editItem(category_id,catItem_id):
+    """function to edit an item."""
 
     if 'username' not in login_session :
         return redirect('/login')
@@ -310,9 +323,6 @@ def editItem(category_id,catItem_id):
         if user_id != session.query(Category).filter_by(name = request.form['category']).one().user_id :
             flash('User not permitted to edit this item')
             return redirect(url_for('editItem'))
-
-
-
         if request.form['name'] :
             editedItem.name = request.form['name']
         if request.form['desc'] :
@@ -337,6 +347,7 @@ def editItem(category_id,catItem_id):
 
 @app.route('/<int:category_id>/<int:catItem_id>/delete', methods = ['GET', 'POST'])
 def deleteItem(category_id, catItem_id):
+    """function to delete an item."""
 
     item = session.query(catItem).filter_by(id = catItem_id).one()
 
@@ -355,6 +366,7 @@ def deleteItem(category_id, catItem_id):
 
 @app.route('/addCategory/', methods = ['GET', 'POST'])
 def addCategory():
+    """function to add a new category."""
 
     if 'username' not in login_session :
         return redirect('/login')

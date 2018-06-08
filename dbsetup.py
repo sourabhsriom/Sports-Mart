@@ -14,6 +14,8 @@ Base = declarative_base()
 secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
 
 class User(Base):
+    """Class to create database of users"""
+
     __tablename__ = 'User'
 
     name = Column(String(80), nullable = False)
@@ -29,6 +31,8 @@ class User(Base):
         '''
 
 class Category(Base):
+    """Class to create database for categories of sports."""
+
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
@@ -44,6 +48,8 @@ class Category(Base):
         }
 
 class catItem(Base):
+    """Class to create database for items of various categories"""
+
     __tablename__ = 'catItem'
 
     name = Column(String(80), nullable=False)
@@ -57,7 +63,7 @@ class catItem(Base):
 
     @property
     def serialize(self):
-        '''serialize category Items'''
+        '''serialize  Items'''
         return {
 
         'name' : self.name,
